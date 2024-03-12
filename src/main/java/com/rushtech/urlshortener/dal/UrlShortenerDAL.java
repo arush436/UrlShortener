@@ -6,7 +6,7 @@ import org.sqlite.SQLiteDataSource;
 
 import java.sql.*;
 
-public class UrlShortenerDAL {
+public class UrlShortenerDAL implements IUrlShortenerDAL {
 
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerDAL.class);
 
@@ -27,9 +27,10 @@ public class UrlShortenerDAL {
                              "WHERE su.short_code = ?")
         ) {
             stmt.setString(1, shortCode);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                originalUrl = rs.getString("long_url");
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    originalUrl = rs.getString("long_url");
+                }
             }
         } catch (SQLException e) {
             handleSQLException("Error executing SQL query", e);
@@ -43,8 +44,9 @@ public class UrlShortenerDAL {
                      "SELECT id FROM original_urls WHERE long_url = ?")
         ) {
             stmt.setString(1, longUrl);
-            ResultSet rs = stmt.executeQuery();
-            return rs.next() ? rs.getLong("id") : -1;
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getLong("id") : -1;
+            }
         } catch (SQLException e) {
             handleSQLException("Error retrieving original URL ID", e);
             return -1;
@@ -78,12 +80,13 @@ public class UrlShortenerDAL {
         ) {
             stmt.setString(1, longUrl);
             stmt.executeUpdate();
-            ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                return rs.getLong(1); // Return the generated id
-            } else {
-                logger.error("Inserting original URL failed, no ID obtained.");
-                throw new SQLException("Inserting original URL failed, no ID obtained.");
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getLong(1); // Return the generated id
+                } else {
+                    logger.error("Inserting original URL failed, no ID obtained.");
+                    throw new SQLException("Inserting original URL failed, no ID obtained.");
+                }
             }
         } catch (SQLException e) {
             handleSQLException("Error inserting original URL into database", e);
@@ -97,8 +100,9 @@ public class UrlShortenerDAL {
                      "SELECT long_url FROM original_urls WHERE long_url = ?")
         ) {
             stmt.setString(1, longUrl);
-            ResultSet rs = stmt.executeQuery();
-            return rs.next() ? rs.getString("long_url") : null;
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getString("long_url") : null;
+            }
         } catch (SQLException e) {
             handleSQLException("Error checking existing original URL", e);
             return null;
@@ -106,14 +110,13 @@ public class UrlShortenerDAL {
     }
 
     public void insertUrlMapping(String shortCode, long originalUrlId) {
-        try (Connection conn = dataSource.getConnection()) {
-            try (PreparedStatement stmt = conn.prepareStatement(
-                    "INSERT INTO short_urls (short_code, original_url_id) VALUES (?, ?)")
-            ) {
-                stmt.setString(1, shortCode);
-                stmt.setLong(2, originalUrlId);
-                stmt.executeUpdate();
-            }
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "INSERT INTO short_urls (short_code, original_url_id) VALUES (?, ?)")
+        ) {
+            stmt.setString(1, shortCode);
+            stmt.setLong(2, originalUrlId);
+            stmt.executeUpdate();
         } catch (SQLException e) {
             handleSQLException("Error inserting new URL mapping into database", e);
         }

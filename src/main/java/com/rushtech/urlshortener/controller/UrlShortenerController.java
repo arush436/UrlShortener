@@ -4,9 +4,9 @@ import com.rushtech.urlshortener.dal.UrlShortenerDAL;
 import com.rushtech.urlshortener.model.OriginalUrlResponse;
 import com.rushtech.urlshortener.model.ShortUrlRequest;
 import com.rushtech.urlshortener.model.ShortUrlResponse;
-import com.rushtech.urlshortener.service.UrlShortenerService;
-import org.apache.commons.validator.routines.UrlValidator;
+import com.rushtech.urlshortener.service.IUrlShortenerService;
 import io.javalin.Javalin;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,12 +14,12 @@ public class UrlShortenerController {
 
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerDAL.class);
 
-    private static final UrlValidator urlValidator = new UrlValidator();
+    private final UrlValidator urlValidator;
+    private final IUrlShortenerService urlShortenerService;
 
-    private final UrlShortenerService urlShortenerService;
-
-    public UrlShortenerController(UrlShortenerService urlShortenerService) {
+    public UrlShortenerController(IUrlShortenerService urlShortenerService, UrlValidator urlValidator) {
         this.urlShortenerService = urlShortenerService;
+        this.urlValidator = urlValidator;
     }
 
     public void startServer() {

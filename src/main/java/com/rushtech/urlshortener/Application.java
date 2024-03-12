@@ -1,8 +1,11 @@
 package com.rushtech.urlshortener;
 
 import com.rushtech.urlshortener.controller.UrlShortenerController;
+import com.rushtech.urlshortener.dal.IUrlShortenerDAL;
 import com.rushtech.urlshortener.dal.UrlShortenerDAL;
+import com.rushtech.urlshortener.service.IUrlShortenerService;
 import com.rushtech.urlshortener.service.UrlShortenerService;
+import org.apache.commons.validator.routines.UrlValidator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,9 +16,12 @@ public class Application {
     public static void main(String[] args) {
         Properties properties = loadConfiguration();
 
-        UrlShortenerDAL urlShortenerDAL = new UrlShortenerDAL(properties.getProperty("database.url"));
-        UrlShortenerService urlShortenerService = new UrlShortenerService(urlShortenerDAL);
-        UrlShortenerController urlShortenerController = new UrlShortenerController(urlShortenerService);
+        IUrlShortenerDAL urlShortenerDAL = new UrlShortenerDAL(properties.getProperty("database.url"));
+        IUrlShortenerService urlShortenerService = new UrlShortenerService(urlShortenerDAL);
+
+        UrlValidator urlValidator = new UrlValidator();
+
+        UrlShortenerController urlShortenerController = new UrlShortenerController(urlShortenerService, urlValidator);
 
         urlShortenerController.startServer();
     }

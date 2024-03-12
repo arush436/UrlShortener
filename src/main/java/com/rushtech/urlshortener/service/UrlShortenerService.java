@@ -1,15 +1,15 @@
 package com.rushtech.urlshortener.service;
 
-import com.rushtech.urlshortener.dal.UrlShortenerDAL;
+import com.rushtech.urlshortener.dal.IUrlShortenerDAL;
 import com.rushtech.urlshortener.util.ShortCodeGenerator;
 
-public class UrlShortenerService {
+public class UrlShortenerService implements IUrlShortenerService {
 
     private static final String BASE_URL = "http://localhost:8080/";
 
-    private final UrlShortenerDAL urlShortenerDAL;
+    private final IUrlShortenerDAL urlShortenerDAL;
 
-    public UrlShortenerService(UrlShortenerDAL urlShortenerDAL) {
+    public UrlShortenerService(IUrlShortenerDAL urlShortenerDAL) {
         this.urlShortenerDAL = urlShortenerDAL;
     }
 
