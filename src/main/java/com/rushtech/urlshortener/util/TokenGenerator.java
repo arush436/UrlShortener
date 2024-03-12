@@ -6,6 +6,7 @@ public class TokenGenerator implements ITokenGenerator {
 
     private static final int CODE_LENGTH = 6;
 
+    @Override
     public String generateToken() {
         String uuid = UUID.randomUUID().toString();
         uuid = uuid.replaceAll("-", "");

@@ -15,10 +15,12 @@ public class UrlShortenerService implements IUrlShortenerService {
         this.urlShortenerDAL = urlShortenerDAL;
     }
 
+    @Override
     public String getOriginalUrl(String token) {
         return urlShortenerDAL.getOriginalUrl(token);
     }
 
+    @Override
     public String shortenUrl(String longUrl) {
         // Check if the original URL already exists
         long originalUrlId = urlShortenerDAL.getOriginalUrlId(longUrl);
@@ -42,7 +44,7 @@ public class UrlShortenerService implements IUrlShortenerService {
         return BASE_URL + token;
     }
 
-
+    @Override
     public boolean deleteShortUrl(String token) {
         return urlShortenerDAL.deleteShortUrl(token);
     }

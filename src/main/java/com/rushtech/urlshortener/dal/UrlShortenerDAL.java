@@ -1,5 +1,7 @@
 package com.rushtech.urlshortener.dal;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteDataSource;
@@ -10,11 +12,12 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
 
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerDAL.class);
 
-    private final SQLiteDataSource dataSource;
+    private final HikariDataSource dataSource;
 
-    public UrlShortenerDAL(String databaseUrl) {
-        this.dataSource = new SQLiteDataSource();
-        this.dataSource.setUrl(databaseUrl);
+    public UrlShortenerDAL(String databaseUrl){
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(databaseUrl);
+        this.dataSource = new HikariDataSource(config);
     }
 
     public String getOriginalUrl(String token) {

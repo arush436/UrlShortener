@@ -1,6 +1,7 @@
 package com.rushtech.urlshortener.dal;
 
 public interface IUrlShortenerDAL {
+
     String getOriginalUrl(String token);
 
     long getOriginalUrlId(String longUrl);
