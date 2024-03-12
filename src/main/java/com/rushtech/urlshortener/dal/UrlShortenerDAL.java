@@ -4,13 +4,14 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sqlite.SQLiteDataSource;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 
 public class UrlShortenerDAL implements IUrlShortenerDAL {
 
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerDAL.class);
+    private static final int EXPIRY_DATE_MONTHS_IN_FUTURE = 6;
 
     private final HikariDataSource dataSource;
 
@@ -20,6 +21,8 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         this.dataSource = new HikariDataSource(config);
     }
 
+
+    @Override
     public String getOriginalUrl(String token) {
         String originalUrl = null;
         try (Connection conn = dataSource.getConnection();
@@ -41,6 +44,7 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         return originalUrl;
     }
 
+    @Override
     public long getOriginalUrlId(String longUrl) {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
@@ -56,6 +60,7 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         }
     }
 
+    @Override
     public void updateToken(String token, long originalUrlId) {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
@@ -76,12 +81,16 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
             return -1; // Indicates that the URL already exists
         }
 
+        LocalDateTime expirationDateTime = LocalDateTime.now().plusMonths(EXPIRY_DATE_MONTHS_IN_FUTURE);
+        Timestamp expirationTimestamp = Timestamp.valueOf(expirationDateTime);
+
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                     "INSERT INTO original_urls (long_url) VALUES (?)",
+                     "INSERT INTO original_urls (long_url, expiration_date) VALUES (?, ?)",
                      Statement.RETURN_GENERATED_KEYS)
         ) {
             stmt.setString(1, longUrl);
+            stmt.setTimestamp(2, expirationTimestamp); // Set the expiration date
             stmt.executeUpdate();
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
@@ -97,6 +106,8 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         return -1; // Return a default value if insertion fails
     }
 
+
+    @Override
     public String getExistingOriginalUrl(String longUrl) {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
@@ -112,6 +123,7 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         }
     }
 
+    @Override
     public void insertUrlMapping(String token, long originalUrlId) {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
@@ -125,6 +137,7 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         }
     }
 
+    @Override
     public String getTokenForOriginalUrl(long originalUrlId) {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
@@ -140,6 +153,7 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         }
     }
 
+    @Override
     public boolean deleteShortUrl(String token) {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
