@@ -61,4 +61,9 @@ public class UrlShortenerService implements IUrlShortenerService {
     public boolean deleteShortUrl(String token) {
         return urlShortenerDAL.deleteShortUrl(token);
     }
+
+    @Override
+    public void incrementRedirectCount(String originalUrl) {
+        urlShortenerDAL.incrementRedirectCount(originalUrl);
+    }
 }

@@ -116,22 +116,6 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
     }
 
     @Override
-    public String getExistingOriginalUrl(String longUrl) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT long_url FROM original_urls WHERE long_url = ?")
-        ) {
-            stmt.setString(1, longUrl);
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? rs.getString("long_url") : null;
-            }
-        } catch (SQLException e) {
-            handleSQLException("Error checking existing original URL", e);
-            return null;
-        }
-    }
-
-    @Override
     public void insertUrlMapping(String token, long originalUrlId) {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
@@ -173,6 +157,21 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         } catch (SQLException e) {
             handleSQLException("Error deleting short URL from database", e);
             return false;
+        }
+    }
+
+    @Override
+    public void incrementRedirectCount(String originalUrl) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement insertStmt = conn.prepareStatement(
+                     "INSERT OR REPLACE INTO redirect_analytics (original_url, redirect_count) " +
+                             "VALUES (?, COALESCE((SELECT redirect_count FROM redirect_analytics WHERE original_url = ?), 0) + 1)")
+        ) {
+            insertStmt.setString(1, originalUrl);
+            insertStmt.setString(2, originalUrl);
+            insertStmt.executeUpdate();
+        } catch (SQLException e) {
+            handleSQLException("Error updating redirect count", e);
         }
     }
 

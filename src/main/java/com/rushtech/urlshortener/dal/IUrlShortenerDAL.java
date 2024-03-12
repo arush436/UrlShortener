@@ -10,11 +10,11 @@ public interface IUrlShortenerDAL {
 
     long insertOriginalUrl(String longUrl);
 
-    String getExistingOriginalUrl(String longUrl);
-
     void insertUrlMapping(String token, long originalUrlId);
 
     String getTokenForOriginalUrl(long originalUrlId);
 
     boolean deleteShortUrl(String token);
+
+    void incrementRedirectCount(String originalUrl);
 }

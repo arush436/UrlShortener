@@ -44,6 +44,7 @@ public class UrlShortenerController {
         String token = ctx.pathParam("token");
         String originalUrl = urlShortenerService.getOriginalUrl(token);
         if (originalUrl != null) {
+            urlShortenerService.incrementRedirectCount(originalUrl);
             ctx.redirect(originalUrl);
         } else {
             logger.error("Shortened URL not found");
