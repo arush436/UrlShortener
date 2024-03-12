@@ -13,7 +13,7 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerDAL.class);
 
     private final HikariDataSource dataSource;
-        private final int expiryDateMonthsInFuture;
+    private final int expiryDateMonthsInFuture;
 
     public UrlShortenerDAL(String databaseUrl, int maxPoolSize, int connectionTimeoutMilliSeconds, int expiryDateMonthsInFuture) {
         this.expiryDateMonthsInFuture = expiryDateMonthsInFuture;
@@ -22,6 +22,7 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         config.setJdbcUrl(databaseUrl);
         config.setMaximumPoolSize(maxPoolSize);
         config.setConnectionTimeout(connectionTimeoutMilliSeconds);
+
         this.dataSource = new HikariDataSource(config);
     }
 
@@ -93,11 +94,11 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
                      Statement.RETURN_GENERATED_KEYS)
         ) {
             stmt.setString(1, longUrl);
-            stmt.setTimestamp(2, expirationTimestamp); // Set the expiration date
+            stmt.setTimestamp(2, expirationTimestamp);
             stmt.executeUpdate();
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
-                    return rs.getLong(1); // Return the generated id
+                    return rs.getLong(1);
                 } else {
                     logger.error("Inserting original URL failed, no ID obtained.");
                     throw new SQLException("Inserting original URL failed, no ID obtained.");
@@ -106,7 +107,7 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         } catch (SQLException e) {
             handleSQLException("Error inserting original URL into database", e);
         }
-        return -1; // Return a default value if insertion fails
+        return -1;
     }
 
 
