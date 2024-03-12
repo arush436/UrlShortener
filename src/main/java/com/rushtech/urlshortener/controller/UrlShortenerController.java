@@ -27,9 +27,9 @@ public class UrlShortenerController {
 
         urlShortenerApp.get("/", this::welcomeMessage);
 
-        urlShortenerApp.get("/{shortCode}", this::redirectToOriginalUrl);
+        urlShortenerApp.get("/{token}", this::redirectToOriginalUrl);
 
-        urlShortenerApp.get("/original/{shortCode}", this::getOriginalUrl);
+        urlShortenerApp.get("/original/{token}", this::getOriginalUrl);
 
         urlShortenerApp.post("/shorten", this::shortenUrl);
     }
@@ -39,8 +39,8 @@ public class UrlShortenerController {
     }
 
     private void redirectToOriginalUrl(Context ctx) {
-        String shortCode = ctx.pathParam("shortCode");
-        String originalUrl = urlShortenerService.getOriginalUrl(shortCode);
+        String token = ctx.pathParam("token");
+        String originalUrl = urlShortenerService.getOriginalUrl(token);
         if (originalUrl != null) {
             ctx.redirect(originalUrl);
         } else {
@@ -49,9 +49,9 @@ public class UrlShortenerController {
     }
 
     private void getOriginalUrl(Context ctx) {
-        String shortCode = ctx.pathParam("shortCode");
+        String token = ctx.pathParam("token");
         try {
-            String originalUrl = urlShortenerService.getOriginalUrl(shortCode);
+            String originalUrl = urlShortenerService.getOriginalUrl(token);
             if (originalUrl != null) {
                 ctx.json(new OriginalUrlResponse(originalUrl));
             } else {

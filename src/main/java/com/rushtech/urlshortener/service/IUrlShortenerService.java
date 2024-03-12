@@ -1,7 +1,7 @@
 package com.rushtech.urlshortener.service;
 
 public interface IUrlShortenerService {
-    String getOriginalUrl(String shortCode);
+    String getOriginalUrl(String token);
 
     String shortenUrl(String longUrl);
 }

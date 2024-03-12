@@ -5,8 +5,8 @@ import com.rushtech.urlshortener.dal.IUrlShortenerDAL;
 import com.rushtech.urlshortener.dal.UrlShortenerDAL;
 import com.rushtech.urlshortener.service.IUrlShortenerService;
 import com.rushtech.urlshortener.service.UrlShortenerService;
-import com.rushtech.urlshortener.util.IShortCodeGenerator;
-import com.rushtech.urlshortener.util.ShortCodeGenerator;
+import com.rushtech.urlshortener.util.ITokenGenerator;
+import com.rushtech.urlshortener.util.TokenGenerator;
 import org.apache.commons.validator.routines.UrlValidator;
 
 import java.io.IOException;
@@ -19,8 +19,8 @@ public class Application {
         Properties properties = loadConfiguration();
 
         IUrlShortenerDAL urlShortenerDAL = new UrlShortenerDAL(properties.getProperty("database.url"));
-        IShortCodeGenerator shortCodeGenerator = new ShortCodeGenerator();
-        IUrlShortenerService urlShortenerService = new UrlShortenerService(shortCodeGenerator, urlShortenerDAL);
+        ITokenGenerator tokenGenerator = new TokenGenerator();
+        IUrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL);
 
         UrlValidator urlValidator = new UrlValidator();
 

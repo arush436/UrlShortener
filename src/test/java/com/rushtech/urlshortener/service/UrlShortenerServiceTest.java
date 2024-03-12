@@ -1,7 +1,7 @@
 package com.rushtech.urlshortener.service;
 
 import com.rushtech.urlshortener.dal.IUrlShortenerDAL;
-import com.rushtech.urlshortener.util.IShortCodeGenerator;
+import com.rushtech.urlshortener.util.ITokenGenerator;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,16 +17,16 @@ public class UrlShortenerServiceTest {
     public void shortenUrl_NewOriginalUrl_ShouldReturnShortenedUrl() {
         // Arrange
         String longUrl = "http://example.com";
-        String shortCode = "abc123";
+        String token = "abc123";
         String expectedShortenedUrl = "http://localhost:8080/abc123";
 
         IUrlShortenerDAL urlShortenerDAL = mock(IUrlShortenerDAL.class);
         when(urlShortenerDAL.getOriginalUrlId(longUrl)).thenReturn(NON_EXISTING_URL_ID);
 
-        IShortCodeGenerator shortCodeGenerator = mock(IShortCodeGenerator.class);
-        when(shortCodeGenerator.generateShortCode()).thenReturn(shortCode);
+        ITokenGenerator tokenGenerator = mock(ITokenGenerator.class);
+        when(tokenGenerator.generateToken()).thenReturn(token);
 
-        UrlShortenerService urlShortenerService = new UrlShortenerService(shortCodeGenerator, urlShortenerDAL);
+        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL);
 
         // Act
         String shortenedUrl = urlShortenerService.shortenUrl(longUrl);
@@ -34,24 +34,24 @@ public class UrlShortenerServiceTest {
         // Assert
         assertEquals(expectedShortenedUrl, shortenedUrl);
         verify(urlShortenerDAL).insertOriginalUrl(longUrl);
-        verify(urlShortenerDAL).insertUrlMapping(shortCode, DEFAULT_ID);
+        verify(urlShortenerDAL).insertUrlMapping(token, DEFAULT_ID);
     }
 
     @Test
     public void shortenUrl_ExistingOriginalUrl_ShouldReturnShortenedUrl() {
         // Arrange
         String longUrl = "http://example.com";
-        String newShortCode = "newShortCode";
-        String expectedShortenedUrl = "http://localhost:8080/newShortCode";
+        String newToken = "newToken";
+        String expectedShortenedUrl = "http://localhost:8080/" + newToken;
 
-        IShortCodeGenerator shortCodeGenerator = mock(IShortCodeGenerator.class);
-        when(shortCodeGenerator.generateShortCode()).thenReturn(newShortCode);
+        ITokenGenerator tokenGenerator = mock(ITokenGenerator.class);
+        when(tokenGenerator.generateToken()).thenReturn(newToken);
 
         IUrlShortenerDAL urlShortenerDAL = mock(IUrlShortenerDAL.class);
         when(urlShortenerDAL.getOriginalUrlId(longUrl)).thenReturn(EXISTING_URL_ID);
-        doNothing().when(urlShortenerDAL).updateShortCode(newShortCode, EXISTING_URL_ID);
+        doNothing().when(urlShortenerDAL).updateToken(newToken, EXISTING_URL_ID);
 
-        UrlShortenerService urlShortenerService = new UrlShortenerService(shortCodeGenerator, urlShortenerDAL);
+        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL);
 
         // Act
         String shortenedUrl = urlShortenerService.shortenUrl(longUrl);
@@ -59,24 +59,24 @@ public class UrlShortenerServiceTest {
         // Assert
         assertEquals(expectedShortenedUrl, shortenedUrl);
         verify(urlShortenerDAL, never()).insertOriginalUrl(longUrl);
-        verify(urlShortenerDAL).updateShortCode(newShortCode, EXISTING_URL_ID);
+        verify(urlShortenerDAL).updateToken(newToken, EXISTING_URL_ID);
     }
 
 
     @Test
     public void getOriginalUrl_ShouldReturnOriginalUrl() {
         // Arrange
-        String shortCode = "abc123";
+        String token = "abc123";
         String originalUrl = "http://example.com";
 
-        IShortCodeGenerator shortCodeGenerator = mock(IShortCodeGenerator.class);
+        ITokenGenerator tokenGenerator = mock(ITokenGenerator.class);
         IUrlShortenerDAL urlShortenerDAL = mock(IUrlShortenerDAL.class);
-        when(urlShortenerDAL.getOriginalUrl(shortCode)).thenReturn(originalUrl);
+        when(urlShortenerDAL.getOriginalUrl(token)).thenReturn(originalUrl);
 
-        UrlShortenerService urlShortenerService = new UrlShortenerService(shortCodeGenerator, urlShortenerDAL);
+        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL);
 
         // Act
-        String retrievedOriginalUrl = urlShortenerService.getOriginalUrl(shortCode);
+        String retrievedOriginalUrl = urlShortenerService.getOriginalUrl(token);
 
         // Assert
         assertEquals(originalUrl, retrievedOriginalUrl);

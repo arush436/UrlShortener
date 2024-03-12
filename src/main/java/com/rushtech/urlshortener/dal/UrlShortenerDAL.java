@@ -17,16 +17,16 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         this.dataSource.setUrl(databaseUrl);
     }
 
-    public String getOriginalUrl(String shortCode) {
+    public String getOriginalUrl(String token) {
         String originalUrl = null;
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
                      "SELECT ou.long_url " +
                              "FROM original_urls ou " +
-                             "JOIN short_urls su ON ou.id = su.original_url_id " +
-                             "WHERE su.short_code = ?")
+                             "JOIN tokens t ON ou.id = t.original_url_id " +
+                             "WHERE t.token = ?")
         ) {
-            stmt.setString(1, shortCode);
+            stmt.setString(1, token);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     originalUrl = rs.getString("long_url");
@@ -53,16 +53,16 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         }
     }
 
-    public void updateShortCode(String shortCode, long originalUrlId) {
+    public void updateToken(String token, long originalUrlId) {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                     "UPDATE short_urls SET short_code = ? WHERE original_url_id = ?")
+                     "UPDATE tokens SET token = ? WHERE original_url_id = ?")
         ) {
-            stmt.setString(1, shortCode);
+            stmt.setString(1, token);
             stmt.setLong(2, originalUrlId);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            handleSQLException("Error updating short code", e);
+            handleSQLException("Error updating token", e);
         }
     }
 
@@ -109,12 +109,12 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         }
     }
 
-    public void insertUrlMapping(String shortCode, long originalUrlId) {
+    public void insertUrlMapping(String token, long originalUrlId) {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                     "INSERT INTO short_urls (short_code, original_url_id) VALUES (?, ?)")
+                     "INSERT INTO tokens (token, original_url_id) VALUES (?, ?)")
         ) {
-            stmt.setString(1, shortCode);
+            stmt.setString(1, token);
             stmt.setLong(2, originalUrlId);
             stmt.executeUpdate();
         } catch (SQLException e) {
