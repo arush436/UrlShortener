@@ -8,10 +8,12 @@ public class ShortCodeGeneratorTest {
 
     @Test
     public void generateShortCode_ValidInput_ReturnsSixCharacters() {
+        int expectedShortCodeGeneratorLength = 6;
+
         ShortCodeGenerator shortCodeGenerator = new ShortCodeGenerator();
         String shortCode = shortCodeGenerator.generateShortCode();
 
-        assertEquals(6, shortCode.length(), "Generated short code length should be 6");
+        assertEquals(expectedShortCodeGeneratorLength, shortCode.length(), "Generated short code length should be 6");
     }
 
     @Test

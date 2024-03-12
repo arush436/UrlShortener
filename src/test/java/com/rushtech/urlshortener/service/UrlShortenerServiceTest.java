@@ -9,6 +9,10 @@ import static org.mockito.Mockito.*;
 
 public class UrlShortenerServiceTest {
 
+    private static final long EXISTING_URL_ID = 1L;
+    private static final long NON_EXISTING_URL_ID = -1L;
+    private static final long DEFAULT_ID = 0L;
+
     @Test
     public void shortenUrl_NewOriginalUrl_ShouldReturnShortenedUrl() {
         // Arrange
@@ -17,7 +21,7 @@ public class UrlShortenerServiceTest {
         String expectedShortenedUrl = "http://localhost:8080/abc123";
 
         IUrlShortenerDAL urlShortenerDAL = mock(IUrlShortenerDAL.class);
-        when(urlShortenerDAL.getOriginalUrlId(longUrl)).thenReturn(-1L);
+        when(urlShortenerDAL.getOriginalUrlId(longUrl)).thenReturn(NON_EXISTING_URL_ID);
 
         IShortCodeGenerator shortCodeGenerator = mock(IShortCodeGenerator.class);
         when(shortCodeGenerator.generateShortCode()).thenReturn(shortCode);
@@ -30,7 +34,7 @@ public class UrlShortenerServiceTest {
         // Assert
         assertEquals(expectedShortenedUrl, shortenedUrl);
         verify(urlShortenerDAL).insertOriginalUrl(longUrl);
-        verify(urlShortenerDAL).insertUrlMapping(shortCode, 0L);
+        verify(urlShortenerDAL).insertUrlMapping(shortCode, DEFAULT_ID);
     }
 
     @Test
@@ -44,8 +48,8 @@ public class UrlShortenerServiceTest {
         when(shortCodeGenerator.generateShortCode()).thenReturn(newShortCode);
 
         IUrlShortenerDAL urlShortenerDAL = mock(IUrlShortenerDAL.class);
-        when(urlShortenerDAL.getOriginalUrlId(longUrl)).thenReturn(1L); // Request URL exists
-        doNothing().when(urlShortenerDAL).updateShortCode(newShortCode, 1L);
+        when(urlShortenerDAL.getOriginalUrlId(longUrl)).thenReturn(EXISTING_URL_ID);
+        doNothing().when(urlShortenerDAL).updateShortCode(newShortCode, EXISTING_URL_ID);
 
         UrlShortenerService urlShortenerService = new UrlShortenerService(shortCodeGenerator, urlShortenerDAL);
 
@@ -55,7 +59,7 @@ public class UrlShortenerServiceTest {
         // Assert
         assertEquals(expectedShortenedUrl, shortenedUrl);
         verify(urlShortenerDAL, never()).insertOriginalUrl(longUrl);
-        verify(urlShortenerDAL).updateShortCode(newShortCode, 1L);
+        verify(urlShortenerDAL).updateShortCode(newShortCode, EXISTING_URL_ID);
     }
 
 
