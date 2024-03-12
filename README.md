@@ -68,6 +68,10 @@ CREATE INDEX "idx_tokens_original_url_id" ON "tokens" (
 )
 ```
 
+### Postman Requests
+
+You can find a collection of Postman requests for interacting with the URL shortener API in the `URL_Shortener.postman_collection` file.
+
 ### Dependencies
 
 The project uses Javalin as the web framework and relies on Maven for dependency management. Other dependencies and plugins are specified in the `pom.xml` file.
