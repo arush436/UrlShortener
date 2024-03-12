@@ -35,4 +35,8 @@ public class UrlShortenerService implements IUrlShortenerService {
 
         return BASE_URL + token;
     }
+
+    public boolean deleteShortUrl(String token) {
+        return urlShortenerDAL.deleteShortUrl(token);
+    }
 }

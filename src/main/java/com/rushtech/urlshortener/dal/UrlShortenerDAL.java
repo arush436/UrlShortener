@@ -122,6 +122,20 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         }
     }
 
+    public boolean deleteShortUrl(String token) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "DELETE FROM tokens WHERE token = ?")
+        ) {
+            stmt.setString(1, token);
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            handleSQLException("Error deleting short URL from database", e);
+            return false;
+        }
+    }
+
     private void handleSQLException(String message, SQLException e) {
         logger.error(message, e);
         throw new UrlShortenerDataAccessException(message, e);

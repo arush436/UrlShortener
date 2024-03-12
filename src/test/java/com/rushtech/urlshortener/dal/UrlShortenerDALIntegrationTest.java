@@ -9,6 +9,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static junit.framework.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -74,6 +75,25 @@ public class UrlShortenerDALIntegrationTest {
         String retrievedOriginalUrl = urlShortenerDAL.getOriginalUrl(TEST_TOKEN);
 
         assertNull(retrievedOriginalUrl);
+    }
+
+    @Test
+    void deleteShortUrl_ValidToken_ShouldReturnTrue() {
+        insertTestData();
+
+        boolean result = urlShortenerDAL.deleteShortUrl(TEST_TOKEN);
+
+        assertTrue(result);
+    }
+
+    private void insertTestData() {
+        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("INSERT INTO original_urls (long_url) VALUES ('" + TEST_LONG_URL + "')");
+            stmt.executeUpdate("INSERT INTO tokens (token, original_url_id) VALUES ('" + TEST_TOKEN + "', 1)");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private void dropTables() throws SQLException {

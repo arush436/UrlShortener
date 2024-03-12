@@ -32,6 +32,8 @@ public class UrlShortenerController {
         urlShortenerApp.get("/original/{token}", this::getOriginalUrl);
 
         urlShortenerApp.post("/shorten", this::shortenUrl);
+
+        urlShortenerApp.delete("/short/{token}", this::deleteShortUrl);
     }
 
     private void welcomeMessage(Context ctx) {
@@ -44,6 +46,7 @@ public class UrlShortenerController {
         if (originalUrl != null) {
             ctx.redirect(originalUrl);
         } else {
+            logger.error("Shortened URL not found");
             ctx.status(404).result("Shortened URL not found");
         }
     }
@@ -73,6 +76,17 @@ public class UrlShortenerController {
             String errorMessage = "Invalid URL to shorten: " + longUrl;
             logger.error(errorMessage);
             ctx.status(400).result(errorMessage);
+        }
+    }
+
+    private void deleteShortUrl(Context ctx) {
+        String token = ctx.pathParam("token");
+        boolean deleted = urlShortenerService.deleteShortUrl(token);
+        if (deleted) {
+            ctx.result("Short URL and associated long URL deleted successfully");
+        } else {
+            logger.error("Short URL not found");
+            ctx.status(404).result("Short URL not found");
         }
     }
 }

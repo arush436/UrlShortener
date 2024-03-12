@@ -5,6 +5,7 @@ import com.rushtech.urlshortener.util.ITokenGenerator;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class UrlShortenerServiceTest {
@@ -80,5 +81,24 @@ public class UrlShortenerServiceTest {
 
         // Assert
         assertEquals(originalUrl, retrievedOriginalUrl);
+    }
+
+    @Test
+    public void deleteShortUrl_ValidToken_ShouldReturnTrue() {
+        // Arrange
+        String testToken = "testToken";
+
+        IUrlShortenerDAL urlShortenerDAL = mock(IUrlShortenerDAL.class);
+        when(urlShortenerDAL.deleteShortUrl(testToken)).thenReturn(true);
+
+        ITokenGenerator tokenGenerator = mock(ITokenGenerator.class);
+
+        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL);
+
+        // Act
+        boolean result = urlShortenerService.deleteShortUrl(testToken);
+
+        // Assert
+        assertTrue(result);
     }
 }
