@@ -11,17 +11,17 @@ import java.time.LocalDateTime;
 public class UrlShortenerDAL implements IUrlShortenerDAL {
 
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerDAL.class);
-    private static final int EXPIRY_DATE_MONTHS_IN_FUTURE = 6;
-    private static final int MAX_POOL_SIZE = 20;
-    private static final int CONNECTION_TIMEOUT_MILLISECONDS = 30000;
 
     private final HikariDataSource dataSource;
+        private final int expiryDateMonthsInFuture;
 
-    public UrlShortenerDAL(String databaseUrl){
+    public UrlShortenerDAL(String databaseUrl, int maxPoolSize, int connectionTimeoutMilliSeconds, int expiryDateMonthsInFuture) {
+        this.expiryDateMonthsInFuture = expiryDateMonthsInFuture;
+
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(databaseUrl);
-        config.setMaximumPoolSize(MAX_POOL_SIZE);
-        config.setConnectionTimeout(CONNECTION_TIMEOUT_MILLISECONDS);
+        config.setMaximumPoolSize(maxPoolSize);
+        config.setConnectionTimeout(connectionTimeoutMilliSeconds);
         this.dataSource = new HikariDataSource(config);
     }
 
@@ -84,7 +84,7 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
             return -1; // Indicates that the URL already exists
         }
 
-        LocalDateTime expirationDateTime = LocalDateTime.now().plusMonths(EXPIRY_DATE_MONTHS_IN_FUTURE);
+        LocalDateTime expirationDateTime = LocalDateTime.now().plusMonths(expiryDateMonthsInFuture);
         Timestamp expirationTimestamp = Timestamp.valueOf(expirationDateTime);
 
         try (Connection conn = dataSource.getConnection();

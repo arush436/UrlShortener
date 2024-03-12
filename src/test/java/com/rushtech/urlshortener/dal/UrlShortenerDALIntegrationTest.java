@@ -18,6 +18,9 @@ public class UrlShortenerDALIntegrationTest {
     private static final String DATABASE_URL = "jdbc:sqlite:test_url_shortener_db.db";
     private static final String TEST_LONG_URL = "http://example.com";
     private static final String TEST_TOKEN = "testToken";
+    private static final int MAX_POOL_SIZE = 20;
+    private static final int CONNECTION_TIMEOUT_MILLISECONDS = 30000;
+    private static final int EXPIRY_DATE_MONTHS_IN_FUTURE = 6;
 
     private UrlShortenerDAL urlShortenerDAL;
 
@@ -26,7 +29,7 @@ public class UrlShortenerDALIntegrationTest {
         try {
             Connection conn = DriverManager.getConnection(DATABASE_URL);
             createTablesInDatabase(conn);
-            urlShortenerDAL = new UrlShortenerDAL(DATABASE_URL);
+            urlShortenerDAL = new UrlShortenerDAL(DATABASE_URL, MAX_POOL_SIZE, CONNECTION_TIMEOUT_MILLISECONDS, EXPIRY_DATE_MONTHS_IN_FUTURE);
         } catch (SQLException e) {
             e.printStackTrace();
         }

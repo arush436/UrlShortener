@@ -1,5 +1,6 @@
 package com.rushtech.urlshortener.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.rushtech.urlshortener.dal.IUrlShortenerDAL;
 import com.rushtech.urlshortener.util.CacheManager;
 import com.rushtech.urlshortener.util.ITokenGenerator;
@@ -65,7 +66,7 @@ public class UrlShortenerServiceTest {
 
 
     @Test
-    public void getOriginalUrl_ShouldReturnOriginalUrl() {
+    public void getOriginalUrl_ValidToken_ShouldReturnOriginalUrl() {
         // Arrange
         String token = "abc123";
         String originalUrl = "http://example.com";
@@ -74,7 +75,9 @@ public class UrlShortenerServiceTest {
         IUrlShortenerDAL urlShortenerDAL = mock(IUrlShortenerDAL.class);
         when(urlShortenerDAL.getOriginalUrl(token)).thenReturn(originalUrl);
 
-        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL, CacheManager.getOriginalUrlCache());
+        Cache cache = mock(Cache.class);
+
+        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL, cache);
 
         // Act
         String retrievedOriginalUrl = urlShortenerService.getOriginalUrl(token);
@@ -100,5 +103,27 @@ public class UrlShortenerServiceTest {
 
         // Assert
         assertTrue(result);
+    }
+
+    @Test
+    public void shortenUrl_SameOriginalUrl_ShouldReturnSameToken() {
+        // Arrange
+        String longUrl = "http://example.com";
+        String expectedToken = "abc123";
+
+        IUrlShortenerDAL urlShortenerDAL = mock(IUrlShortenerDAL.class);
+        when(urlShortenerDAL.getOriginalUrlId(longUrl)).thenReturn(EXISTING_URL_ID);
+
+        ITokenGenerator tokenGenerator = mock(ITokenGenerator.class);
+        when(tokenGenerator.generateToken()).thenReturn(expectedToken);
+
+        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL, CacheManager.getOriginalUrlCache());
+
+        // Act
+        String shortenedUrl1 = urlShortenerService.shortenUrl(longUrl);
+        String shortenedUrl2 = urlShortenerService.shortenUrl(longUrl);
+
+        // Assert
+        assertEquals(shortenedUrl1, shortenedUrl2);
     }
 }
