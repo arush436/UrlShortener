@@ -10,14 +10,11 @@ To run the application, you need to have Maven and Java 17 installed on your mac
 2. Navigate to the project directory.
 3. Run the following Maven command to compile and package the application:
 
-
-    mvn clean compile assembly:single
+    `mvn clean compile assembly:single`
 
 4. After successful compilation, run the following command to start the application:
 
-
-    java -jar target/UrlShortener-1.0-SNAPSHOT-jar-with-dependencies.jar
-
+    `java -jar target/UrlShortener-1.0-SNAPSHOT-jar-with-dependencies.jar`
 
 5. The application will start and be accessible at `http://localhost:8080/`.
 
