@@ -1,6 +1,7 @@
 package com.rushtech.urlshortener.service;
 
 import com.rushtech.urlshortener.dal.IUrlShortenerDAL;
+import com.rushtech.urlshortener.util.CacheManager;
 import com.rushtech.urlshortener.util.ITokenGenerator;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +28,7 @@ public class UrlShortenerServiceTest {
         ITokenGenerator tokenGenerator = mock(ITokenGenerator.class);
         when(tokenGenerator.generateToken()).thenReturn(token);
 
-        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL);
+        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL, CacheManager.getOriginalUrlCache());
 
         // Act
         String shortenedUrl = urlShortenerService.shortenUrl(longUrl);
@@ -51,7 +52,7 @@ public class UrlShortenerServiceTest {
         when(urlShortenerDAL.getOriginalUrlId(existingLongUrl)).thenReturn(EXISTING_URL_ID);
         when(urlShortenerDAL.getTokenForOriginalUrl(EXISTING_URL_ID)).thenReturn(token);
 
-        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL);
+        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL, CacheManager.getOriginalUrlCache());
 
         // Act
         String shortenedUrl = urlShortenerService.shortenUrl(existingLongUrl);
@@ -73,7 +74,7 @@ public class UrlShortenerServiceTest {
         IUrlShortenerDAL urlShortenerDAL = mock(IUrlShortenerDAL.class);
         when(urlShortenerDAL.getOriginalUrl(token)).thenReturn(originalUrl);
 
-        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL);
+        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL, CacheManager.getOriginalUrlCache());
 
         // Act
         String retrievedOriginalUrl = urlShortenerService.getOriginalUrl(token);
@@ -92,7 +93,7 @@ public class UrlShortenerServiceTest {
 
         ITokenGenerator tokenGenerator = mock(ITokenGenerator.class);
 
-        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL);
+        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL, CacheManager.getOriginalUrlCache());
 
         // Act
         boolean result = urlShortenerService.deleteShortUrl(testToken);

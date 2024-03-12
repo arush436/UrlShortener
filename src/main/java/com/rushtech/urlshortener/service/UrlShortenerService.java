@@ -1,5 +1,6 @@
 package com.rushtech.urlshortener.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.rushtech.urlshortener.dal.IUrlShortenerDAL;
 import com.rushtech.urlshortener.util.ITokenGenerator;
 
@@ -9,15 +10,28 @@ public class UrlShortenerService implements IUrlShortenerService {
 
     private final ITokenGenerator tokenGenerator;
     private final IUrlShortenerDAL urlShortenerDAL;
+    private final Cache<String, String> originalUrlCache;
 
-    public UrlShortenerService(ITokenGenerator tokenGenerator, IUrlShortenerDAL urlShortenerDAL) {
+    public UrlShortenerService(ITokenGenerator tokenGenerator, IUrlShortenerDAL urlShortenerDAL, Cache<String, String> originalUrlCache) {
         this.tokenGenerator = tokenGenerator;
         this.urlShortenerDAL = urlShortenerDAL;
+        this.originalUrlCache = originalUrlCache;
     }
 
     @Override
     public String getOriginalUrl(String token) {
-        return urlShortenerDAL.getOriginalUrl(token);
+
+        // Check cache first
+        String originalUrl = originalUrlCache.getIfPresent(token);
+        if (originalUrl == null) {
+            // If not found in cache, retrieve from database
+            originalUrl = urlShortenerDAL.getOriginalUrl(token);
+            // Cache the result
+            if (originalUrl != null) {
+                originalUrlCache.put(token, originalUrl);
+            }
+        }
+        return originalUrl;
     }
 
     @Override

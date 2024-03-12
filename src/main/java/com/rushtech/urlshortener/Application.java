@@ -1,10 +1,12 @@
 package com.rushtech.urlshortener;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.rushtech.urlshortener.controller.UrlShortenerController;
 import com.rushtech.urlshortener.dal.IUrlShortenerDAL;
 import com.rushtech.urlshortener.dal.UrlShortenerDAL;
 import com.rushtech.urlshortener.service.IUrlShortenerService;
 import com.rushtech.urlshortener.service.UrlShortenerService;
+import com.rushtech.urlshortener.util.CacheManager;
 import com.rushtech.urlshortener.util.ITokenGenerator;
 import com.rushtech.urlshortener.util.TokenGenerator;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -20,7 +22,12 @@ public class Application {
 
         IUrlShortenerDAL urlShortenerDAL = new UrlShortenerDAL(properties.getProperty("database.url"));
         ITokenGenerator tokenGenerator = new TokenGenerator();
-        IUrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL);
+
+        long expireAfterWrite = Long.parseLong(properties.getProperty("cache.expireAfterWriteMinutes"));
+        long maximumSize = Long.parseLong(properties.getProperty("cache.maximumSize"));
+        CacheManager.configureCache(expireAfterWrite, maximumSize);
+
+        IUrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL, CacheManager.getOriginalUrlCache());
 
         UrlValidator urlValidator = new UrlValidator();
 
