@@ -22,19 +22,26 @@ public class UrlShortenerService implements IUrlShortenerService {
     public String shortenUrl(String longUrl) {
         // Check if the original URL already exists
         long originalUrlId = urlShortenerDAL.getOriginalUrlId(longUrl);
-        String token = tokenGenerator.generateToken();
+        String token;
 
         if (originalUrlId == -1) {
             // If the original URL doesn't exist, insert it and create a new token
+            token = tokenGenerator.generateToken();
             originalUrlId = urlShortenerDAL.insertOriginalUrl(longUrl);
             urlShortenerDAL.insertUrlMapping(token, originalUrlId);
         } else {
-            // If the original URL exists, update the existing token
-            urlShortenerDAL.updateToken(token, originalUrlId);
+            // If the original URL exists, check if it already has a token
+            token = urlShortenerDAL.getTokenForOriginalUrl(originalUrlId);
+            if (token == null) {
+                // If it doesn't have a token, generate one
+                token = tokenGenerator.generateToken();
+                urlShortenerDAL.insertUrlMapping(token, originalUrlId);
+            }
         }
 
         return BASE_URL + token;
     }
+
 
     public boolean deleteShortUrl(String token) {
         return urlShortenerDAL.deleteShortUrl(token);

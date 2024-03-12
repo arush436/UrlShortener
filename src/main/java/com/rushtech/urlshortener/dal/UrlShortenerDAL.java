@@ -122,6 +122,21 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         }
     }
 
+    public String getTokenForOriginalUrl(long originalUrlId) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT token FROM tokens WHERE original_url_id = ?")
+        ) {
+            stmt.setLong(1, originalUrlId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getString("token") : null;
+            }
+        } catch (SQLException e) {
+            handleSQLException("Error retrieving token for original URL", e);
+            return null;
+        }
+    }
+
     public boolean deleteShortUrl(String token) {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(

@@ -13,5 +13,7 @@ public interface IUrlShortenerDAL {
 
     void insertUrlMapping(String token, long originalUrlId);
 
+    String getTokenForOriginalUrl(long originalUrlId);
+
     boolean deleteShortUrl(String token);
 }
