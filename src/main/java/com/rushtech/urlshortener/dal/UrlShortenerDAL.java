@@ -79,12 +79,6 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
     }
 
     public long insertOriginalUrl(String longUrl) {
-        // Check if the URL already exists
-        String existingOriginalUrl = getExistingOriginalUrl(longUrl);
-        if (existingOriginalUrl != null) {
-            return -1; // Indicates that the URL already exists
-        }
-
         LocalDateTime expirationDateTime = LocalDateTime.now().plusMonths(expiryDateMonthsInFuture);
         Timestamp expirationTimestamp = Timestamp.valueOf(expirationDateTime);
 
@@ -109,7 +103,6 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         }
         return -1;
     }
-
 
     @Override
     public String getExistingOriginalUrl(String longUrl) {

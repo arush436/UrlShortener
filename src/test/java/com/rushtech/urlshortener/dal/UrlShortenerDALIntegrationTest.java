@@ -37,7 +37,7 @@ public class UrlShortenerDALIntegrationTest {
 
     private void createTablesInDatabase(Connection conn) {
         try (Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS original_urls (id INTEGER PRIMARY KEY AUTOINCREMENT, long_url TEXT NOT NULL UNIQUE)");
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS original_urls (id INTEGER PRIMARY KEY AUTOINCREMENT, long_url TEXT NOT NULL UNIQUE, expiration_date TIMESTAMP)");
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS tokens (token TEXT PRIMARY KEY, original_url_id INTEGER NOT NULL, FOREIGN KEY (original_url_id) REFERENCES original_urls(id))");
         } catch (SQLException e) {
             e.printStackTrace();

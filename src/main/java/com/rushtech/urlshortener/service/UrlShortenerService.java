@@ -20,7 +20,6 @@ public class UrlShortenerService implements IUrlShortenerService {
 
     @Override
     public String getOriginalUrl(String token) {
-
         // Check cache first
         String originalUrl = originalUrlCache.getIfPresent(token);
         if (originalUrl == null) {
