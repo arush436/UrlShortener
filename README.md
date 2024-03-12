@@ -34,7 +34,7 @@ The application is structured using a layered architecture, separating concerns 
 
 ### Database
 
-The application uses a SQLite database stored in a local file named url_shortener_db.db to store URL mappings. This SQLite database file is used for regular application operations. Additionally, for integration tests, a separate SQLite database file named test_url_shortener_db.db is utilized. Both database files are configured within the application's configuration files.
+The application uses a SQLite database stored in a local file named `url_shortener_db.db` to store URL mappings. This SQLite database file is used for regular application operations. Additionally, for integration tests, a separate SQLite database file named `test_url_shortener_db.db` is utilized. Both database files are configured within the application's configuration files.
 
 The SQL to for the Database can be seen below:
 
