@@ -29,21 +29,31 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
     @Override
     public String getOriginalUrl(String token) {
         String originalUrl = null;
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT ou.long_url " +
-                             "FROM original_urls ou " +
-                             "JOIN tokens t ON ou.id = t.original_url_id " +
-                             "WHERE t.token = ?")
-        ) {
-            stmt.setString(1, token);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    originalUrl = rs.getString("long_url");
+        Connection conn = null;
+        try {
+            conn = dataSource.getConnection();
+            conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT ou.long_url " +
+                            "FROM original_urls ou " +
+                            "JOIN tokens t ON ou.id = t.original_url_id " +
+                            "WHERE t.token = ?")
+            ) {
+                stmt.setString(1, token);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        originalUrl = rs.getString("long_url");
+                    }
                 }
             }
+            conn.commit();
         } catch (SQLException e) {
+            rollbackTransaction(conn);
             handleSQLException("Error executing SQL query", e);
+        } finally {
+            closeConnection(conn);
         }
         return originalUrl;
     }
@@ -78,6 +88,7 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         }
     }
 
+    @Override
     public long insertOriginalUrl(String longUrl) {
         LocalDateTime expirationDateTime = LocalDateTime.now().plusMonths(expiryDateMonthsInFuture);
         Timestamp expirationTimestamp = Timestamp.valueOf(expirationDateTime);
@@ -162,6 +173,27 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
         } catch (SQLException e) {
             handleSQLException("Error deleting short URL from database", e);
             return false;
+        }
+    }
+
+    private void rollbackTransaction(Connection connection) {
+        if (connection != null) {
+            try {
+                connection.rollback();
+            } catch (SQLException e) {
+                logger.error("Error rolling back transaction", e);
+            }
+        }
+    }
+
+    private void closeConnection(Connection connection) {
+        if (connection != null) {
+            try {
+                connection.setAutoCommit(true); // Reset auto-commit mode
+                connection.close();
+            } catch (SQLException e) {
+                logger.error("Error closing connection", e);
+            }
         }
     }
 
