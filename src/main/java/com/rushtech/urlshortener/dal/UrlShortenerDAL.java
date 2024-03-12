@@ -12,15 +12,18 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
 
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerDAL.class);
     private static final int EXPIRY_DATE_MONTHS_IN_FUTURE = 6;
+    private static final int MAX_POOL_SIZE = 20;
+    private static final int CONNECTION_TIMEOUT_MILLISECONDS = 30000;
 
     private final HikariDataSource dataSource;
 
     public UrlShortenerDAL(String databaseUrl){
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(databaseUrl);
+        config.setMaximumPoolSize(MAX_POOL_SIZE);
+        config.setConnectionTimeout(CONNECTION_TIMEOUT_MILLISECONDS);
         this.dataSource = new HikariDataSource(config);
     }
-
 
     @Override
     public String getOriginalUrl(String token) {
