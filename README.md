@@ -1,6 +1,6 @@
 ## URL Shortener
 
-This is a simple URL shortener application built using Java 17, Javalin and Maven.
+This is a simple URL shortener REST API built using Java 17, Javalin and Maven.
 
 ### Running the Application
 
