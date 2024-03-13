@@ -96,7 +96,9 @@ public class UrlShortenerServiceTest {
 
         ITokenGenerator tokenGenerator = mock(ITokenGenerator.class);
 
-        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL, CacheManager.getOriginalUrlCache());
+        Cache<String, String> cache = mock(Cache.class);
+
+        UrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL, cache);
 
         // Act
         boolean result = urlShortenerService.deleteShortUrl(testToken);

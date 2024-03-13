@@ -18,22 +18,8 @@ public class Application {
 
     public static void main(String[] args) {
         Properties properties = loadConfiguration();
-
-        IUrlShortenerDAL urlShortenerDAL = new UrlShortenerDAL(
-                properties.getProperty("database.url"),
-                Integer.parseInt(properties.getProperty("database.maxPoolSize")),
-                Integer.parseInt(properties.getProperty("database.connectionTimeoutMilliseconds")),
-                Integer.parseInt(properties.getProperty("url.expiryDateMonthsInFuture"))
-        );
-
-        long expireAfterWrite = Long.parseLong(properties.getProperty("cache.expireAfterWriteMinutes"));
-        long maximumSize = Long.parseLong(properties.getProperty("cache.maximumSize"));
-        CacheManager.configureCache(expireAfterWrite, maximumSize);
-
-        ITokenGenerator tokenGenerator = new TokenGenerator();
-
-        IUrlShortenerService urlShortenerService = new UrlShortenerService(tokenGenerator, urlShortenerDAL, CacheManager.getOriginalUrlCache());
-
+        configureCache(properties);
+        IUrlShortenerService urlShortenerService = createUrlShortenerService(properties);
         UrlValidator urlValidator = new UrlValidator();
         UrlShortenerController urlShortenerController = new UrlShortenerController(urlShortenerService, urlValidator);
 
@@ -48,5 +34,26 @@ public class Application {
             ex.printStackTrace();
         }
         return properties;
+    }
+
+    private static void configureCache(Properties properties) {
+        long expireAfterWrite = Long.parseLong(properties.getProperty("cache.expireAfterWriteMinutes"));
+        long maximumSize = Long.parseLong(properties.getProperty("cache.maximumSize"));
+        CacheManager.configureCache(expireAfterWrite, maximumSize);
+    }
+
+    private static IUrlShortenerService createUrlShortenerService(Properties properties) {
+        IUrlShortenerDAL urlShortenerDAL = createUrlShortenerDAL(properties);
+        ITokenGenerator tokenGenerator = new TokenGenerator();
+        return new UrlShortenerService(tokenGenerator, urlShortenerDAL, CacheManager.getOriginalUrlCache());
+    }
+
+    private static IUrlShortenerDAL createUrlShortenerDAL(Properties properties) {
+        return new UrlShortenerDAL(
+                properties.getProperty("database.url"),
+                Integer.parseInt(properties.getProperty("database.maxPoolSize")),
+                Integer.parseInt(properties.getProperty("database.connectionTimeoutMilliseconds")),
+                Integer.parseInt(properties.getProperty("url.expiryDateMonthsInFuture"))
+        );
     }
 }
