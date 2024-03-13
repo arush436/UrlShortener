@@ -37,7 +37,15 @@ public class UrlShortenerService implements IUrlShortenerService {
 
     @Override
     public boolean deleteShortUrl(String token) {
-        return urlShortenerDAL.deleteShortUrl(token);
+        boolean deletedFromDatabase = urlShortenerDAL.deleteShortUrl(token);
+        if (deletedFromDatabase) {
+            removeFromCache(token);
+        }
+        return deletedFromDatabase;
+    }
+
+    private void removeFromCache(String token) {
+        originalUrlCache.invalidate(token);
     }
 
     @Override
