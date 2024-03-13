@@ -1,6 +1,5 @@
 package com.rushtech.urlshortener;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import com.rushtech.urlshortener.controller.UrlShortenerController;
 import com.rushtech.urlshortener.dal.IUrlShortenerDAL;
 import com.rushtech.urlshortener.dal.UrlShortenerDAL;

@@ -20,40 +20,18 @@ public class UrlShortenerService implements IUrlShortenerService {
 
     @Override
     public String getOriginalUrl(String token) {
-        // Check cache first
-        String originalUrl = originalUrlCache.getIfPresent(token);
+        String originalUrl = getCachedOriginalUrl(token);
         if (originalUrl == null) {
-            // If not found in cache, retrieve from database
             originalUrl = urlShortenerDAL.getOriginalUrl(token);
-            // Cache the result
-            if (originalUrl != null) {
-                originalUrlCache.put(token, originalUrl);
-            }
+            cacheOriginalUrl(token, originalUrl);
         }
         return originalUrl;
     }
 
     @Override
     public String shortenUrl(String longUrl) {
-        // Check if the original URL already exists
         long originalUrlId = urlShortenerDAL.getOriginalUrlId(longUrl);
-        String token;
-
-        if (originalUrlId == -1) {
-            // If the original URL doesn't exist, insert it and create a new token
-            token = tokenGenerator.generateToken();
-            originalUrlId = urlShortenerDAL.insertOriginalUrl(longUrl);
-            urlShortenerDAL.insertUrlMapping(token, originalUrlId);
-        } else {
-            // If the original URL exists, check if it already has a token
-            token = urlShortenerDAL.getTokenForOriginalUrl(originalUrlId);
-            if (token == null) {
-                // If it doesn't have a token, generate one
-                token = tokenGenerator.generateToken();
-                urlShortenerDAL.insertUrlMapping(token, originalUrlId);
-            }
-        }
-
+        String token = generateOrRetrieveToken(longUrl, originalUrlId);
         return BASE_URL + token;
     }
 
@@ -65,5 +43,31 @@ public class UrlShortenerService implements IUrlShortenerService {
     @Override
     public void incrementRedirectCount(String originalUrl) {
         urlShortenerDAL.incrementRedirectCount(originalUrl);
+    }
+
+    private String getCachedOriginalUrl(String token) {
+        return originalUrlCache.getIfPresent(token);
+    }
+
+    private void cacheOriginalUrl(String token, String originalUrl) {
+        if (originalUrl != null) {
+            originalUrlCache.put(token, originalUrl);
+        }
+    }
+
+    private String generateOrRetrieveToken(String longUrl, long originalUrlId) {
+        String token;
+        if (originalUrlId == -1) {
+            token = tokenGenerator.generateToken();
+            originalUrlId = urlShortenerDAL.insertOriginalUrl(longUrl);
+            urlShortenerDAL.insertUrlMapping(token, originalUrlId);
+        } else {
+            token = urlShortenerDAL.getTokenForOriginalUrl(originalUrlId);
+            if (token == null) {
+                token = tokenGenerator.generateToken();
+                urlShortenerDAL.insertUrlMapping(token, originalUrlId);
+            }
+        }
+        return token;
     }
 }

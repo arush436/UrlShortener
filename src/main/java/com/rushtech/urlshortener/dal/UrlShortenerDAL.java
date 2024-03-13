@@ -147,16 +147,63 @@ public class UrlShortenerDAL implements IUrlShortenerDAL {
 
     @Override
     public boolean deleteShortUrl(String token) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "DELETE FROM tokens WHERE token = ?")
+        Connection conn = null;
+        try {
+            conn = dataSource.getConnection();
+            conn.setAutoCommit(false);
+
+            long originalUrlId = getOriginalUrlIdFromToken(conn, token);
+
+            if (originalUrlId != -1) {
+                boolean mappingDeleted = deleteMappingEntry(conn, token);
+                boolean originalUrlDeleted = deleteOriginalUrlEntry(conn, originalUrlId);
+
+                if (mappingDeleted && originalUrlDeleted) {
+                    conn.commit();
+                    return true;
+                } else {
+                    conn.rollback();
+                    return false;
+                }
+            } else {
+                conn.rollback();
+                return false;
+            }
+        } catch (SQLException e) {
+            rollbackTransaction(conn);
+            handleSQLException("Error deleting short URL and associated original URL from database", e);
+            return false;
+        } finally {
+            closeConnection(conn);
+        }
+    }
+
+    private boolean deleteMappingEntry(Connection conn, String token) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "DELETE FROM tokens WHERE token = ?")
         ) {
             stmt.setString(1, token);
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            handleSQLException("Error deleting short URL from database", e);
-            return false;
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    private boolean deleteOriginalUrlEntry(Connection conn, long originalUrlId) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "DELETE FROM original_urls WHERE id = ?")
+        ) {
+            stmt.setLong(1, originalUrlId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    private long getOriginalUrlIdFromToken(Connection conn, String token) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "SELECT original_url_id FROM tokens WHERE token = ?")
+        ) {
+            stmt.setString(1, token);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getLong("original_url_id") : -1;
+            }
         }
     }
 

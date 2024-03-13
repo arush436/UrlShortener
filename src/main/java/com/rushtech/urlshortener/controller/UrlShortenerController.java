@@ -24,16 +24,35 @@ public class UrlShortenerController {
 
     public void startServer() {
         Javalin urlShortenerApp = Javalin.create().start(8080);
+        setupRoutes(urlShortenerApp);
+    }
 
-        urlShortenerApp.get("/", this::welcomeMessage);
+    private void setupRoutes(Javalin app) {
+        setupWelcomeRoute(app);
+        setupRedirectRoute(app);
+        setupOriginalUrlRoute(app);
+        setupShortenUrlRoute(app);
+        setupDeleteShortUrlRoute(app);
+    }
 
-        urlShortenerApp.get("/{token}", this::redirectToOriginalUrl);
+    private void setupWelcomeRoute(Javalin app) {
+        app.get("/", this::welcomeMessage);
+    }
 
-        urlShortenerApp.get("/original/{token}", this::getOriginalUrl);
+    private void setupRedirectRoute(Javalin app) {
+        app.get("/{token}", this::redirectToOriginalUrl);
+    }
 
-        urlShortenerApp.post("/shorten", this::shortenUrl);
+    private void setupOriginalUrlRoute(Javalin app) {
+        app.get("/original/{token}", this::getOriginalUrl);
+    }
 
-        urlShortenerApp.delete("/short/{token}", this::deleteShortUrl);
+    private void setupShortenUrlRoute(Javalin app) {
+        app.post("/shorten", this::shortenUrl);
+    }
+
+    private void setupDeleteShortUrlRoute(Javalin app) {
+        app.delete("/short/{token}", this::deleteShortUrl);
     }
 
     private void welcomeMessage(Context ctx) {
